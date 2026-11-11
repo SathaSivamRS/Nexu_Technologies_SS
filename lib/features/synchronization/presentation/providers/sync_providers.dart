@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/enums/sync_status.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../data/mock_server.dart';
@@ -13,9 +14,30 @@ final syncQueueStorageProvider = Provider<SyncQueueStorage>((ref) {
   return SyncQueueStorageImpl(box);
 });
 
+final mockFailureRateProvider = StateProvider<double>((ref) {
+  final box = ref.watch(mockServerBoxProvider);
+  final savedRate = box.get(AppConstants.mockFailureRateKey);
+  if (savedRate is double) {
+    return savedRate;
+  }
+  return AppConstants.defaultFailureRate;
+});
+
 final mockServerProvider = Provider<MockServer>((ref) {
   final box = ref.watch(mockServerBoxProvider);
-  return MockServer(box);
+  final server = MockServer(
+    box,
+    failureRateGetter: () => ref.read(mockFailureRateProvider),
+  );
+  ref.listen<double>(mockFailureRateProvider, (_, next) {
+    server.setFailureRate(next);
+  });
+  server.setOnFailureRateChanged((newRate) {
+    if (ref.read(mockFailureRateProvider) != newRate) {
+      ref.read(mockFailureRateProvider.notifier).state = newRate;
+    }
+  });
+  return server;
 });
 
 final retryPolicyProvider = Provider<RetryPolicy>((ref) {
@@ -70,10 +92,4 @@ final unsyncedActionsProvider = Provider<List<SyncAction>>((ref) {
 final offlineModeProvider = Provider<bool>((ref) {
   final syncEngine = ref.watch(syncEngineProvider);
   return syncEngine.isOffline;
-});
-
-// Mock Server failure rate state
-final mockFailureRateProvider = Provider<double>((ref) {
-  final mockServer = ref.watch(mockServerProvider);
-  return mockServer.failureRate;
 });

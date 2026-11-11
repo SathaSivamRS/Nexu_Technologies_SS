@@ -85,7 +85,7 @@ class SettingsScreen extends ConsumerWidget {
                                 fontSize: 13, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${(failureRate * 100).toInt()}%',
+                            '${(failureRate * 100).round()}%',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -95,13 +95,15 @@ class SettingsScreen extends ConsumerWidget {
                         ],
                       ),
                       Slider(
-                        value: failureRate,
+                        value: failureRate.clamp(0.0, 1.0),
                         min: 0.0,
                         max: 1.0,
-                        divisions: 10,
-                        label: '${(failureRate * 100).toInt()}%',
+                        divisions: 20,
+                        label: '${(failureRate * 100).round()}%',
                         onChanged: (val) {
-                          syncEngine.setFailureRate(val);
+                          final rounded = (val * 100).round() / 100.0;
+                          ref.read(mockFailureRateProvider.notifier).state =
+                              rounded;
                         },
                       ),
                       Row(
@@ -112,7 +114,11 @@ class SettingsScreen extends ConsumerWidget {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 6),
                               ),
-                              onPressed: () => syncEngine.setFailureRate(0.0),
+                              onPressed: () {
+                                ref
+                                    .read(mockFailureRateProvider.notifier)
+                                    .state = 0.0;
+                              },
                               child: const Text('0% Pass',
                                   style: TextStyle(fontSize: 12)),
                             ),
@@ -124,7 +130,11 @@ class SettingsScreen extends ConsumerWidget {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 6),
                               ),
-                              onPressed: () => syncEngine.setFailureRate(0.30),
+                              onPressed: () {
+                                ref
+                                    .read(mockFailureRateProvider.notifier)
+                                    .state = 0.30;
+                              },
                               child: const Text('30% Default',
                                   style: TextStyle(fontSize: 12)),
                             ),
@@ -136,7 +146,11 @@ class SettingsScreen extends ConsumerWidget {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 6),
                               ),
-                              onPressed: () => syncEngine.setFailureRate(1.0),
+                              onPressed: () {
+                                ref
+                                    .read(mockFailureRateProvider.notifier)
+                                    .state = 1.0;
+                              },
                               child: const Text('100% Fail',
                                   style: TextStyle(fontSize: 12)),
                             ),

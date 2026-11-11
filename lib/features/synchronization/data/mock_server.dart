@@ -37,6 +37,8 @@ class MockServer {
   final Box _storageBox;
   final Future<void> Function(Duration)? _customDelay;
   final Random _random;
+  double Function()? _failureRateGetter;
+  void Function(double)? _onFailureRateChanged;
 
   double _failureRate = AppConstants.defaultFailureRate;
   bool _offlineMode = false;
@@ -45,9 +47,19 @@ class MockServer {
     this._storageBox, {
     Future<void> Function(Duration)? customDelay,
     Random? random,
+    double Function()? failureRateGetter,
   })  : _customDelay = customDelay,
-        _random = random ?? Random() {
+        _random = random ?? Random(),
+        _failureRateGetter = failureRateGetter {
     _loadSettings();
+  }
+
+  void setFailureRateGetter(double Function()? getter) {
+    _failureRateGetter = getter;
+  }
+
+  void setOnFailureRateChanged(void Function(double)? callback) {
+    _onFailureRateChanged = callback;
   }
 
   void _loadSettings() {
@@ -61,12 +73,14 @@ class MockServer {
     }
   }
 
-  double get failureRate => _failureRate;
+  double get failureRate =>
+      _failureRateGetter != null ? _failureRateGetter!() : _failureRate;
   bool get isOffline => _offlineMode;
 
   Future<void> setFailureRate(double rate) async {
     _failureRate = rate.clamp(0.0, 1.0);
     await _storageBox.put(AppConstants.mockFailureRateKey, _failureRate);
+    _onFailureRateChanged?.call(_failureRate);
   }
 
   Future<void> setOfflineMode(bool offline) async {
@@ -124,12 +138,14 @@ class MockServer {
     }
 
     // 4. Simulate Failure Rate: S3
-    if (_failureRate > 0) {
+    final activeRate = failureRate;
+    if (activeRate > 0) {
       final roll = _random.nextDouble();
-      if (roll < _failureRate) {
+      if (roll < activeRate) {
         return MockServerResponse(
           success: false,
-          message: 'Simulated network/server error (${(_failureRate * 100).toInt()}% failure rate active).',
+          message:
+              'Simulated network/server error (${(activeRate * 100).round()}% failure rate active).',
           processedAt: DateTime.now(),
         );
       }
