@@ -58,10 +58,11 @@ The objective of this technical recruitment assessment is to design, implement, 
 - **Interactive Demo Clock & Time-Window Alerts**:
   - Centralized, injectable `ClockService` with date/time pickers and quick adjustment shortcuts.
   - Real-time stop alert badges: **Normal** (> 15 min), **At risk** ($\le 15$ min), and **Late** (> window end).
-- **Consolidated 3-Tab Material 3 Navigation**:
+- **Four-Screen Material 3 Persistent Bottom Navigation**:
   - **Route Tab**: Dispatch header, greeting, Demo Clock, Online/Offline badge, KPI counters, search bar, filter chips, and interactive stop cards with modal bottom sheets.
   - **Summary Tab**: Daily performance KPIs (Success Rate %, On-Time Rate %, stop breakdown) and live Unsynced Actions queue table with manual retry controls.
-  - **Settings Tab**: Network configuration, failure-rate slider with presets, Demo Clock simulation, synchronization queue diagnostics, application info, and account management.
+  - **Settings Tab**: Network configuration, failure-rate slider with presets, Demo Clock simulation, synchronization queue diagnostics, and account management.
+  - **About Tab**: Dedicated application information screen displaying app name, description, version, build number, technology stack, developer details, and assessment metadata.
 
 ---
 
@@ -118,7 +119,7 @@ lib/
   main.dart                               # Hive initialization & application bootstrap
   app/
     app.dart                              # Root MaterialApp & auth-state routing
-    home_navigation_shell.dart            # Material 3 NavigationBar (3 primary tabs)
+    home_navigation_shell.dart            # Material 3 NavigationBar (4 primary tabs)
     theme.dart                            # Material 3 Logistics design system
   core/
     constants/app_constants.dart          # Configuration constants, storage keys & limits
@@ -134,6 +135,7 @@ lib/
     synchronization/                      # MockServer, SyncEngine, RetryPolicy, QueueStorage
     summary/                              # DailySummaryScreen (KPIs & Unsynced Queue - Summary Tab)
     settings/                             # SettingsScreen (Network, Clock, Diagnostics - Settings Tab)
+    about/                                # AboutScreen (App info, tech stack, candidate details - About Tab)
 assets/
   data/route_stops.json                   # Initial route dataset (14 realistic stops)
 test/
@@ -142,6 +144,7 @@ test/
     sync_engine_test.dart                 # S3, S4, S5, S6, S7 sync engine tests
     time_alert_and_sorting_test.dart      # RouteSorter & TimeAlertEvaluator tests
     failure_rate_slider_test.dart         # Controlled slider, presets, dynamic failure rate tests
+    navigation_and_about_test.dart        # 4 persistent bottom tabs & AboutScreen tests
     test_fakes.dart                       # In-memory FakeHiveBox, FakeRouteRepository, FakeSyncQueue
   widget_test.dart                        # Smoke test for route sorting logic
 ```
@@ -191,7 +194,7 @@ flutter run
 
 ## 10. Running Automated Tests
 
-The repository contains **21 automated tests** covering all business rules (R1–R6), synchronization mechanics (S1–S7), route sorting, and UI slider controls.
+The repository contains **25 automated tests** covering all business rules (R1–R6), synchronization mechanics (S1–S7), route sorting, UI slider controls, and the four-screen persistent navigation.
 
 Execute the entire test suite via:
 
@@ -199,7 +202,7 @@ Execute the entire test suite via:
 flutter test
 ```
 
-### Verified Test Breakdown (21 Tests)
+### Verified Test Breakdown (25 Tests)
 - `test/unit/workflow_test.dart`:
   - **R1**: Single active stop constraint.
   - **R2**: Delivered validation (recipient name $\ge 2$ chars, exact package match).
@@ -224,6 +227,11 @@ flutter test
   - Preset buttons (0% Pass, 30% Default, 100% Fail) update state and server.
   - Dynamic request failure evaluation: 100% failure rate forces 100% failure; 0% forces 100% success.
   - `SettingsScreen` UI widget test: Tapping preset buttons updates slider and label text immediately.
+- `test/unit/navigation_and_about_test.dart`:
+  - Verifies exactly four persistent bottom navigation destinations (Route, Summary, Settings, About).
+  - Verifies seamless tab switching between all four screens in the persistent shell.
+  - Verifies `AboutScreen` renders complete application, tech stack, and assessment metadata.
+  - Verifies screen state preservation across all four tabs via `IndexedStack`.
 - `test/widget_test.dart`:
   - Smoke test validating deterministic route ordering.
 

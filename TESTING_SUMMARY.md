@@ -13,10 +13,10 @@ flutter test
 ```
 
 ### Execution Results
-- **Total Tests Written**: 21
-- **Total Tests Passed**: 21
+- **Total Tests Written**: 25
+- **Total Tests Passed**: 25
 - **Total Tests Failed**: 0
-- **Execution Time**: ~4.2 seconds
+- **Execution Time**: ~3.5 seconds
 - **Pass Rate**: 100%
 
 ---
@@ -52,6 +52,10 @@ flutter test
 | **Slider Presets** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies 0% Pass, 30% Default, and 100% Fail presets correctly configure slider and server. |
 | **Dynamic Request Evaluation** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies MockServer dynamically uses 100% rate to fail 100% of requests and 0% rate to pass 100% of requests. |
 | **Settings UI Widget** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies tapping preset buttons in SettingsScreen immediately updates slider value and label text. |
+| **Four Bottom Destinations** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies exactly four persistent bottom navigation destinations: Route, Summary, Settings, About. |
+| **Tab Switching Workflow** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies smooth transitions between all four screens in the persistent shell. |
+| **About Screen Content** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies full display of app name, description, version, build number, tech stack, and candidate metadata. |
+| **IndexedStack State Retention** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies screen state preservation across all four tabs via IndexedStack. |
 | **Smoke Test** | `test/widget_test.dart` | **PASSED** | Smoke test validating end-to-end sorting logic. |
 
 ---

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app/theme.dart';
+import '../features/about/presentation/screens/about_screen.dart';
 import '../features/route_management/presentation/screens/dashboard_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/summary/presentation/screens/daily_summary_screen.dart';
@@ -18,6 +19,7 @@ class _HomeNavigationShellState extends State<HomeNavigationShell> {
     DashboardScreen(),
     DailySummaryScreen(),
     SettingsScreen(),
+    AboutScreen(),
   ];
 
   @override
@@ -52,6 +54,12 @@ class _HomeNavigationShellState extends State<HomeNavigationShell> {
             selectedIcon:
                 Icon(Icons.settings_rounded, color: AppTheme.primaryNavy),
             label: 'Settings',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.info_outline_rounded),
+            selectedIcon:
+                Icon(Icons.info_rounded, color: AppTheme.primaryNavy),
+            label: 'About',
           ),
         ],
       ),

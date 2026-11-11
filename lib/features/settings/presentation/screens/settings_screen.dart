@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/enums/sync_status.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/date_time_formatter.dart';
@@ -35,7 +34,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings & Application Info'),
+        title: const Text('Application Settings'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -335,44 +334,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Section D: Application Information (Merged About)
-          _buildSectionHeader('D. APPLICATION INFORMATION'),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildInfoRow('Application', AppConstants.appName,
-                      Icons.apps_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Developer', AppConstants.developerName,
-                      Icons.person_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Company', AppConstants.companyName,
-                      Icons.business_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Assessment', AppConstants.assessmentTitle,
-                      Icons.assignment_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Received Date',
-                      AppConstants.assessmentReceivedDate,
-                      Icons.calendar_today_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Received Time',
-                      AppConstants.assessmentReceivedTime,
-                      Icons.access_time_rounded),
-                  const Divider(height: 16),
-                  _buildInfoRow('Version', AppConstants.appVersion,
-                      Icons.info_outline_rounded),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Section E: Account
-          _buildSectionHeader('E. ACCOUNT & DATA MANAGEMENT'),
+          // Section D: Account & Data Management
+          _buildSectionHeader('D. ACCOUNT & DATA MANAGEMENT'),
           Card(
             margin: EdgeInsets.zero,
             child: Column(
@@ -516,38 +479,6 @@ class SettingsScreen extends ConsumerWidget {
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: color,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: AppTheme.secondaryBlue),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
             ),
           ),
         ),

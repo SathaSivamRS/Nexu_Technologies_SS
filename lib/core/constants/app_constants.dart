@@ -30,11 +30,14 @@ class AppConstants {
 
   // About Metadata
   static const String appName = 'NEXU RouteRunner';
+  static const String appDescription =
+      'Offline-first delivery management application.';
   static const String developerName = 'Sathasivam R S';
   static const String assessmentTitle =
       'Application Developer Intern – Mobile Applications';
   static const String companyName = 'NEXU Technologies Private Limited';
   static const String assessmentReceivedDate = '11 November 2026';
-  static const String assessmentReceivedTime = '18:45:14 IST';
+  static const String assessmentReceivedTime = '07:27:00 IST';
   static const String appVersion = '1.0.0';
+  static const String appBuildNumber = '1';
 }
