@@ -1,0 +1,142 @@
+[
+  {
+    "id": "STOP-001",
+    "customerName": "Elena Rostova",
+    "address": "142 Maplewood Avenue, Downtown",
+    "expectedPackages": 2,
+    "windowStart": "08:30",
+    "windowEnd": "09:30",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-002",
+    "customerName": "Marcus Sterling",
+    "address": "88 Financial Tower, Suite 402, Financial District",
+    "expectedPackages": 1,
+    "windowStart": "09:00",
+    "windowEnd": "10:00",
+    "priority": "Urgent",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-003",
+    "customerName": "Samantha Reed",
+    "address": "704 Oakridge Blvd, Westside",
+    "expectedPackages": 3,
+    "windowStart": "09:00",
+    "windowEnd": "10:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-004",
+    "customerName": "David K. Chen",
+    "address": "219 Pinehurst Road, Apt 3B, River North",
+    "expectedPackages": 1,
+    "windowStart": "09:30",
+    "windowEnd": "10:30",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-005",
+    "customerName": "Dr. Sarah Thornton",
+    "address": "550 Medical Plaza, Suite 100, Uptown",
+    "expectedPackages": 4,
+    "windowStart": "10:00",
+    "windowEnd": "11:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-006",
+    "customerName": "Apex Biotech Labs (Attn: Dr. Vance)",
+    "address": "1200 Tech Campus Way, Innovation Park",
+    "expectedPackages": 2,
+    "windowStart": "10:30",
+    "windowEnd": "11:30",
+    "priority": "Urgent",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-007",
+    "customerName": "Liam Gallagher",
+    "address": "33 Cedar Court, Greenfield",
+    "expectedPackages": 2,
+    "windowStart": "11:00",
+    "windowEnd": "12:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-008",
+    "customerName": "Nadia Patel",
+    "address": "402 Birchwood Lane, Highland Heights",
+    "expectedPackages": 1,
+    "windowStart": "12:00",
+    "windowEnd": "13:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-009",
+    "customerName": "Harrison Wright",
+    "address": "901 Harbor View Drive, Maritime Quarter",
+    "expectedPackages": 3,
+    "windowStart": "13:30",
+    "windowEnd": "14:30",
+    "priority": "Urgent",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-010",
+    "customerName": "Chloe Moreau",
+    "address": "77 Willow Creek Path, Suburbia Heights",
+    "expectedPackages": 2,
+    "windowStart": "14:00",
+    "windowEnd": "15:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-011",
+    "customerName": "Oliver Jensen",
+    "address": "612 Elmwood Park, South Gate",
+    "expectedPackages": 1,
+    "windowStart": "15:00",
+    "windowEnd": "16:00",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-012",
+    "customerName": "Amara Okafor",
+    "address": "104 Sunburst Boulevard, Sunnyvale",
+    "expectedPackages": 5,
+    "windowStart": "15:30",
+    "windowEnd": "16:30",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-013",
+    "customerName": "Julian & Clara Mercer",
+    "address": "25 Brookstone Terrace, Willowbrook",
+    "expectedPackages": 2,
+    "windowStart": "16:30",
+    "windowEnd": "17:30",
+    "priority": "Normal",
+    "status": "Pending"
+  },
+  {
+    "id": "STOP-014",
+    "customerName": "Kavita Ramachandran",
+    "address": "810 Horizon Way, Skyview District",
+    "expectedPackages": 1,
+    "windowStart": "17:00",
+    "windowEnd": "18:00",
+    "priority": "Urgent",
+    "status": "Pending"
+  }
+]
