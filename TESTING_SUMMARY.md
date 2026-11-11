@@ -23,40 +23,40 @@ flutter test
 
 ## 2. Mandatory Tests Breakdown
 
-| ID | Assessment Test Target | Test Implementation File | Result | Verification Focus |
+| ID | Assessment Test Target | Test Suite | Result | Verification Focus |
 |---|---|---|---|---|
-| **Test 1** | **R1**: Only one active stop | `test/unit/workflow_test.dart` | **PASSED** | Verifies that when STOP-001 is `Arrived`, calling `markArrived('STOP-002')` throws `WorkflowFailure` identifying the currently active stop. |
-| **Test 2** | **R2**: Delivered validation | `test/unit/workflow_test.dart` | **PASSED** | Verifies that whitespace-only recipient name, single-character name (< 2 chars), and mismatched package count (less or greater than expected) are strictly rejected with `ValidationFailure`. |
-| **Test 3** | **R4**: Retry mechanism | `test/unit/workflow_test.dart` | **PASSED** | Verifies that 1st failure moves stop to route end with `isRetry = true` and `failureCount = 1`. 2nd failure marks stop as `Returned to hub` and prevents further retries. |
-| **Test 4** | **R6**: Urgent stops | `test/unit/workflow_test.dart` | **PASSED** | Verifies that an Urgent stop with window "09:00–10:00" tested at 08:45 AM rejects `Customer absent` with `ValidationFailure`. Other failure reasons succeed. |
-| **Test 5** | **S3**: Exponential backoff | `test/unit/sync_engine_test.dart` | **PASSED** | Verifies 1st retry delay is 2s, 2nd retry delay is 4s, 3rd retry delay is 8s, and that after 3rd retry failure, the action transitions to `needsAttention`. |
-| **Test 6** | **S4**: Per-stop ordering | `test/unit/sync_engine_test.dart` | **PASSED** | Verifies that actions for `STOP-001` (Arrived, Delivered, Undo) are processed strictly in FIFO sequence number order. Subsequent actions are blocked when an earlier action is retrying. |
-| **Test 7** | **S5**: Duplicate protection | `test/unit/sync_engine_test.dart` | **PASSED** | Verifies that sending the same UUID request ID twice returns `success: true` with `wasDuplicate: true` and does not apply duplicate state mutations. |
-| **Test 8** | **S7**: Restart safety | `test/unit/sync_engine_test.dart` | **PASSED** | Verifies that queued actions stored before app restart survive in local queue storage and automatically resume processing upon engine re-initialization. |
+| **Test 1** | **R1**: Only one active stop | Workflow Rules Suite | **PASSED** | Verifies that when STOP-001 is `Arrived`, calling `markArrived('STOP-002')` throws `WorkflowFailure` identifying the currently active stop. |
+| **Test 2** | **R2**: Delivered validation | Workflow Rules Suite | **PASSED** | Verifies that whitespace-only recipient name, single-character name (< 2 chars), and mismatched package count (less or greater than expected) are strictly rejected with `ValidationFailure`. |
+| **Test 3** | **R4**: Retry mechanism | Workflow Rules Suite | **PASSED** | Verifies that 1st failure moves stop to route end with `isRetry = true` and `failureCount = 1`. 2nd failure marks stop as `Returned to hub` and prevents further retries. |
+| **Test 4** | **R6**: Urgent stops | Workflow Rules Suite | **PASSED** | Verifies that an Urgent stop with window "09:00–10:00" tested at 08:45 AM rejects `Customer absent` with `ValidationFailure`. Other failure reasons succeed. |
+| **Test 5** | **S3**: Exponential backoff | Sync Engine Suite | **PASSED** | Verifies 1st retry delay is 2s, 2nd retry delay is 4s, 3rd retry delay is 8s, and that after 3rd retry failure, the action transitions to `needsAttention`. |
+| **Test 6** | **S4**: Per-stop ordering | Sync Engine Suite | **PASSED** | Verifies that actions for `STOP-001` (Arrived, Delivered, Undo) are processed strictly in FIFO sequence number order. Subsequent actions are blocked when an earlier action is retrying. |
+| **Test 7** | **S5**: Duplicate protection | Sync Engine Suite | **PASSED** | Verifies that sending the same UUID request ID twice returns `success: true` with `wasDuplicate: true` and does not apply duplicate state mutations. |
+| **Test 8** | **S7**: Restart safety | Sync Engine Suite | **PASSED** | Verifies that queued actions stored before app restart survive in local queue storage and automatically resume processing upon engine re-initialization. |
 
 ---
 
 ## 3. Additional Tests Breakdown
 
-| Test Name | Test Implementation File | Result | Verification Focus |
+| Test Name | Test Suite | Result | Verification Focus |
 |---|---|---|---|
-| **R5: 60-Second Undo** | `test/unit/workflow_test.dart` | **PASSED** | Verifies that delivery undo succeeds within 60s, restores stop to `Arrived`, and is permanently rejected after 60s elapsed time. |
-| **R3: Note Validation** | `test/unit/workflow_test.dart` | **PASSED** | Verifies that "Other" failure reason mandates a note of at least 10 trimmed characters. |
-| **S6: Offline Mode** | `test/unit/sync_engine_test.dart` | **PASSED** | Verifies that enabling Offline Mode prevents requests from reaching the server, keeps actions in queue, and auto-syncs when disabled. |
-| **Route Sorter Order** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies sorting by window start ascending, Urgent before Normal on identical start times, and stop ID tie-breaking. |
-| **Route Sorter Retries** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies that retried/failed stops are placed at the end of the route behind active scheduled stops. |
-| **Time Alert Evaluator** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies evaluation of Normal (> 15m), At risk (<= 15m), and Late (> windowEnd) relative to the simulated clock. |
-| **Alert Exclusion** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies that `Delivered` and `Returned to hub` stops are never classified as Late even past their window end. |
-| **Slider 30% to 0%** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies dragging slider from 30% to 0% updates Riverpod state, MockServer, and Hive. |
-| **Slider 30% to 100%** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies dragging slider from 30% to 100% updates Riverpod state, MockServer, and Hive. |
-| **Slider Presets** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies 0% Pass, 30% Default, and 100% Fail presets correctly configure slider and server. |
-| **Dynamic Request Evaluation** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies MockServer dynamically uses 100% rate to fail 100% of requests and 0% rate to pass 100% of requests. |
-| **Settings UI Widget** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies tapping preset buttons in SettingsScreen immediately updates slider value and label text. |
-| **Four Bottom Destinations** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies exactly four persistent bottom navigation destinations: Route, Summary, Settings, About. |
-| **Tab Switching Workflow** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies smooth transitions between all four screens in the persistent shell. |
-| **About Screen Content** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies full display of app name, description, version, build number, tech stack, and candidate metadata. |
-| **IndexedStack State Retention** | `test/unit/navigation_and_about_test.dart` | **PASSED** | Verifies screen state preservation across all four tabs via IndexedStack. |
-| **Smoke Test** | `test/widget_test.dart` | **PASSED** | Smoke test validating end-to-end sorting logic. |
+| **R5: 60-Second Undo** | Workflow Rules Suite | **PASSED** | Verifies that delivery undo succeeds within 60s, restores stop to `Arrived`, and is permanently rejected after 60s elapsed time. |
+| **R3: Note Validation** | Workflow Rules Suite | **PASSED** | Verifies that "Other" failure reason mandates a note of at least 10 trimmed characters. |
+| **S6: Offline Mode** | Sync Engine Suite | **PASSED** | Verifies that enabling Offline Mode prevents requests from reaching the server, keeps actions in queue, and auto-syncs when disabled. |
+| **Route Sorter Order** | Time Alert & Sorting Suite | **PASSED** | Verifies sorting by window start ascending, Urgent before Normal on identical start times, and stop ID tie-breaking. |
+| **Route Sorter Retries** | Time Alert & Sorting Suite | **PASSED** | Verifies that retried/failed stops are placed at the end of the route behind active scheduled stops. |
+| **Time Alert Evaluator** | Time Alert & Sorting Suite | **PASSED** | Verifies evaluation of Normal (> 15m), At risk (<= 15m), and Late (> windowEnd) relative to the simulated clock. |
+| **Alert Exclusion** | Time Alert & Sorting Suite | **PASSED** | Verifies that `Delivered` and `Returned to hub` stops are never classified as Late even past their window end. |
+| **Slider 30% to 0%** | Failure Rate Slider Suite | **PASSED** | Verifies dragging slider from 30% to 0% updates Riverpod state, MockServer, and Hive. |
+| **Slider 30% to 100%** | Failure Rate Slider Suite | **PASSED** | Verifies dragging slider from 30% to 100% updates Riverpod state, MockServer, and Hive. |
+| **Slider Presets** | Failure Rate Slider Suite | **PASSED** | Verifies 0% Pass, 30% Default, and 100% Fail presets correctly configure slider and server. |
+| **Dynamic Request Evaluation** | Failure Rate Slider Suite | **PASSED** | Verifies MockServer dynamically uses 100% rate to fail 100% of requests and 0% rate to pass 100% of requests. |
+| **Settings UI Widget** | Failure Rate Slider Suite | **PASSED** | Verifies tapping preset buttons in SettingsScreen immediately updates slider value and label text. |
+| **Four Bottom Destinations** | Navigation & About Suite | **PASSED** | Verifies exactly four persistent bottom navigation destinations: Route, Summary, Settings, About. |
+| **Tab Switching Workflow** | Navigation & About Suite | **PASSED** | Verifies smooth transitions between all four screens in the persistent shell. |
+| **About Screen Content** | Navigation & About Suite | **PASSED** | Verifies full display of app name, description, version, build number, tech stack, and candidate metadata. |
+| **IndexedStack State Retention** | Navigation & About Suite | **PASSED** | Verifies screen state preservation across all four tabs via IndexedStack. |
+| **Smoke Test** | Route Sorter Smoke Test | **PASSED** | Smoke test validating end-to-end sorting logic. |
 
 ---
 

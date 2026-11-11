@@ -1,4 +1,6 @@
-# NEXU RouteRunner — Offline-First Delivery Mobile Application
+# Nexu_Technologies_SS
+
+## NEXU RouteRunner — Offline-First Delivery Mobile Application
 
 **NEXU RouteRunner** is a mission-critical, offline-first mobile application built for last-mile delivery agents. It provides a robust workflow for route dispatching, real-time stop execution, time-window alert monitoring, and asynchronous synchronization with idempotent server protection.
 
@@ -138,15 +140,6 @@ lib/
     about/                                # AboutScreen (App info, tech stack, candidate details - About Tab)
 assets/
   data/route_stops.json                   # Initial route dataset (14 realistic stops)
-test/
-  unit/
-    workflow_test.dart                    # R1, R2, R3, R4, R5, R6 unit tests
-    sync_engine_test.dart                 # S3, S4, S5, S6, S7 sync engine tests
-    time_alert_and_sorting_test.dart      # RouteSorter & TimeAlertEvaluator tests
-    failure_rate_slider_test.dart         # Controlled slider, presets, dynamic failure rate tests
-    navigation_and_about_test.dart        # 4 persistent bottom tabs & AboutScreen tests
-    test_fakes.dart                       # In-memory FakeHiveBox, FakeRouteRepository, FakeSyncQueue
-  widget_test.dart                        # Smoke test for route sorting logic
 ```
 
 ---
@@ -163,7 +156,7 @@ test/
 
 1. Open PowerShell and navigate to the project directory:
    ```powershell
-   cd c:\Users\Selvamani\Desktop\Nexu_SS
+   cd Nexu_Technologies_SS
    ```
 
 2. Fetch all package dependencies:
@@ -194,7 +187,7 @@ flutter run
 
 ## 10. Running Automated Tests
 
-The repository contains **25 automated tests** covering all business rules (R1–R6), synchronization mechanics (S1–S7), route sorting, UI slider controls, and the four-screen persistent navigation.
+The application is thoroughly verified by **25 automated tests** covering all business rules (R1–R6), synchronization mechanics (S1–S7), route sorting, UI slider controls, and the four-screen persistent navigation.
 
 Execute the entire test suite via:
 
@@ -203,36 +196,36 @@ flutter test
 ```
 
 ### Verified Test Breakdown (25 Tests)
-- `test/unit/workflow_test.dart`:
+- **Workflow Tests (R1–R6)**:
   - **R1**: Single active stop constraint.
   - **R2**: Delivered validation (recipient name $\ge 2$ chars, exact package match).
   - **R3**: Failure reason "Other" mandates $\ge 10$-character note.
   - **R4**: First failure moves stop to end for retry; second failure locks as `Returned to hub`.
   - **R5**: 60-second delivery undo eligibility and post-60s locking.
   - **R6**: Urgent stop rejection of "Customer absent" before delivery window start.
-- `test/unit/sync_engine_test.dart`:
+- **Synchronization Tests (S3–S7)**:
   - **S3**: Exponential backoff delays (2s, 4s, 8s) and escalation to `needsAttention`.
   - **S4**: Per-stop FIFO ordering (blocked head action holds back later actions).
   - **S5**: Duplicate request ID protection and idempotency acknowledgement.
   - **S6**: Offline mode blocking and automatic queue resumption.
   - **S7**: Queue persistence across application restart.
-- `test/unit/time_alert_and_sorting_test.dart`:
+- **Route Sorting and Time Alert Tests**:
   - RouteSorter ordering by window start ascending, Urgent priority promotion, and Stop ID tie-breaking.
   - RouteSorter retry stop placement at route end.
   - TimeAlertEvaluator classification (Normal, At risk, Late).
   - Exclusion of Delivered and Returned stops from Late alerts.
-- `test/unit/failure_rate_slider_test.dart`:
+- **Failure Rate Slider Tests**:
   - Slider change from 30% to 0% updates Riverpod state, MockServer, and Hive.
   - Slider change from 30% to 100% updates Riverpod state, MockServer, and Hive.
   - Preset buttons (0% Pass, 30% Default, 100% Fail) update state and server.
   - Dynamic request failure evaluation: 100% failure rate forces 100% failure; 0% forces 100% success.
   - `SettingsScreen` UI widget test: Tapping preset buttons updates slider and label text immediately.
-- `test/unit/navigation_and_about_test.dart`:
+- **Navigation and About Screen Tests**:
   - Verifies exactly four persistent bottom navigation destinations (Route, Summary, Settings, About).
   - Verifies seamless tab switching between all four screens in the persistent shell.
   - Verifies `AboutScreen` renders complete application, tech stack, and assessment metadata.
   - Verifies screen state preservation across all four tabs via `IndexedStack`.
-- `test/widget_test.dart`:
+- **Smoke Tests**:
   - Smoke test validating deterministic route ordering.
 
 ---
