@@ -45,14 +45,21 @@ Built according to strict Clean Architecture principles, the application decoupl
 
 ---
 
-## 3. Project Architecture
+## 3. Project Architecture & Navigation Structure
+
+The application features a streamlined navigation flow designed for fast live demonstrations and technical interviews:
+- **Outside Navigation Shell**: `SignInScreen` (Authentication).
+- **Inside Persistent 3-Tab Shell** (`HomeNavigationShell`):
+  1. **Route Tab** (`DashboardScreen`): Combines route dispatch, greeting, Demo Clock time, online/offline status, 3 summary metrics (Total, Delivered, Remaining), search by customer name/address, status filter chips, and interactive stop cards. Tapping any stop opens the comprehensive `StopDetailSheet` modal bottom sheet.
+  2. **Summary Tab** (`DailySummaryScreen`): Combines daily performance KPIs (Success Rate %, On-Time Rate %, stop breakdown) with the Unsynced Offline Queue and individual/bulk manual retry actions.
+  3. **Settings Tab** (`SettingsScreen`): Merges network configuration, Demo Clock controls, synchronization diagnostics, application/developer information, and account management with confirmation dialogs.
 
 ```
 lib/
   main.dart                               # Hive initialization & App bootstrap
   app/
     app.dart                              # Root MaterialApp & auth-state routing
-    home_navigation_shell.dart            # BottomNavigationBar shell (4 tabs)
+    home_navigation_shell.dart            # Material 3 NavigationBar (3 primary tabs)
     theme.dart                            # Material 3 Logistics Theme
   core/
     constants/app_constants.dart          # Configuration constants & box names
@@ -62,13 +69,12 @@ lib/
     services/clock_service.dart           # Centralized injectable Demo Clock
     utils/date_time_formatter.dart        # Window & time formatting helpers
   features/
-    authentication/                       # Auth session data, domain & UI
-    route_management/                     # Stops repository, sorter & alert evaluator
-    stop_workflow/                        # WorkflowService (R1-R6) & sheets
-    synchronization/                      # MockServer, SyncEngine, RetryPolicy, Queue
-    settings/                             # Settings & diagnostics screen
-    summary/                              # Daily Summary KPIs & unsynced queue UI
-    about/                                # Developer & assessment metadata
+    authentication/                       # Auth session data, domain & SignInScreen
+    route_management/                     # Stops repository, sorter & DashboardScreen (Route)
+    stop_workflow/                        # WorkflowService (R1-R6) & modal sheets (StopDetail, Delivery, Failure)
+    synchronization/                      # MockServer, SyncEngine, RetryPolicy, QueueStorage
+    settings/                             # SettingsScreen (Network, Clock, Sync, About, Account)
+    summary/                              # DailySummaryScreen (KPIs & Unsynced queue)
 assets/
   data/route_stops.json                   # Initial route data (14 realistic stops)
 test/

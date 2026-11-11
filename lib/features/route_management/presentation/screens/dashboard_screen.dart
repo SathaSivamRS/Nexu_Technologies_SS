@@ -5,7 +5,7 @@ import '../../../../core/enums/workflow_status.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/date_time_formatter.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../stop_workflow/presentation/screens/stop_detail_screen.dart';
+import '../../../stop_workflow/presentation/widgets/stop_detail_sheet.dart';
 import '../../../synchronization/presentation/providers/sync_providers.dart';
 import '../providers/filter_providers.dart';
 import '../providers/route_providers.dart';
@@ -14,6 +14,15 @@ import '../widgets/summary_metric_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  void _openStopDetailsSheet(BuildContext context, String stopId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StopDetailSheet(stopId: stopId),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,18 +49,19 @@ class DashboardScreen extends ConsumerWidget {
           },
           child: CustomScrollView(
             slivers: [
-              // Top Header Bar
+              // Header Section
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                   color: AppTheme.primaryNavy,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Top Row: NEXU RouteRunner branding + Online/Offline + Sync
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
                               color: Colors.white.withAlpha(25),
                               borderRadius: BorderRadius.circular(8),
@@ -59,42 +69,21 @@ class DashboardScreen extends ConsumerWidget {
                             child: const Icon(
                               Icons.local_shipping_rounded,
                               color: Colors.white,
-                              size: 20,
+                              size: 18,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Good morning, $agentName.',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.schedule,
-                                        size: 13, color: Color(0xFF94A3B8)),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${DateTimeFormatter.displayTimeFormat.format(currentClock)}${ref.watch(clockServiceProvider).isSimulated ? " (Demo Clock)" : ""}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF94A3B8),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                          const SizedBox(width: 8),
+                          const Text(
+                            'NEXU RouteRunner',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.2,
                             ),
                           ),
-                          // Offline Badge
+                          const Spacer(),
+                          // Online / Offline Indicator
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
@@ -117,7 +106,7 @@ class DashboardScreen extends ConsumerWidget {
                                   isOffline
                                       ? Icons.wifi_off_rounded
                                       : Icons.wifi_rounded,
-                                  size: 12,
+                                  size: 11,
                                   color: Colors.white,
                                 ),
                                 const SizedBox(width: 4),
@@ -167,9 +156,47 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+
+                      // Greeting & Current Demo Clock time
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Good morning, $agentName.',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.schedule,
+                                        size: 13, color: Color(0xFF94A3B8)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${DateTimeFormatter.displayTimeFormat.format(currentClock)}${ref.watch(clockServiceProvider).isSimulated ? " (Demo Clock)" : ""}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
 
-                      // Metrics Cards Row
+                      // Summary Metrics: Total stops, Delivered, Remaining (Exact 3 requested)
                       Row(
                         children: [
                           Expanded(
@@ -187,15 +214,6 @@ class DashboardScreen extends ConsumerWidget {
                               value: '${metrics.deliveredCount}',
                               icon: Icons.check_circle_outline_rounded,
                               color: AppTheme.successGreen,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: SummaryMetricCard(
-                              title: 'Failed',
-                              value: '${metrics.failedCount + metrics.returnedToHubCount}',
-                              icon: Icons.cancel_outlined,
-                              color: AppTheme.errorRed,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -258,31 +276,25 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    StopDetailScreen(stopId: activeStop.id),
-                              ),
-                            );
-                          },
-                          child: const Text('VIEW'),
+                          onPressed: () =>
+                              _openStopDetailsSheet(context, activeStop.id),
+                          child: const Text('MANAGE'),
                         ),
                       ],
                     ),
                   ),
                 ),
 
-              // Search & Filters Header
+              // Search & Filters Section
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Column(
                     children: [
-                      // Search Bar
+                      // Customer Name Search
                       TextField(
                         decoration: InputDecoration(
-                          hintText: 'Search customer, address, or stop ID...',
+                          hintText: 'Search customer name or address...',
                           prefixIcon:
                               const Icon(Icons.search_rounded, size: 20),
                           suffixIcon: ref.watch(searchQueryProvider).isNotEmpty
@@ -306,7 +318,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
 
-                      // Filter Chips
+                      // Status Filter Chips
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -344,7 +356,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Stops List
+              // Route List (Stops)
               if (routeState.isLoading)
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
@@ -388,14 +400,7 @@ class DashboardScreen extends ConsumerWidget {
                       final stop = stops[index];
                       return RouteStopCard(
                         stop: stop,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  StopDetailScreen(stopId: stop.id),
-                            ),
-                          );
-                        },
+                        onTap: () => _openStopDetailsSheet(context, stop.id),
                       );
                     },
                     childCount: stops.length,
@@ -403,7 +408,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
 
               const SliverToBoxAdapter(
-                child: SizedBox(height: 32),
+                child: SizedBox(height: 24),
               ),
             ],
           ),

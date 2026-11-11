@@ -15,9 +15,13 @@ class DailySummaryScreen extends ConsumerWidget {
     final summary = ref.watch(dailySummaryProvider);
     final syncEngine = ref.read(syncEngineProvider);
 
+    final hasActivity = summary.deliveredCount > 0 ||
+        summary.failedCount > 0 ||
+        summary.returnedToHubCount > 0;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daily Performance & Sync Summary'),
+        title: const Text('Route Summary & Diagnostics'),
         actions: [
           if (summary.unsyncedActions.isNotEmpty)
             IconButton(
@@ -34,16 +38,16 @@ class DailySummaryScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // KPI Overview Cards
+            // KPI Overview Cards (Success Rate & On-Time Rate)
             const Text(
               'Route Performance KPIs',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -75,40 +79,74 @@ class DailySummaryScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // Stop Status Breakdown
+            // Stop Status Breakdown (Total stops, Delivered, Failed, Returned to hub, Remaining)
             Card(
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildRowItem('Total Scheduled Stops', '${summary.totalStops}',
+                    _buildRowItem('Total Stops', '${summary.totalStops}',
                         Icons.local_shipping_outlined),
                     const Divider(height: 16),
-                    _buildRowItem('Successfully Delivered',
-                        '${summary.deliveredCount}', Icons.check_circle_outline,
+                    _buildRowItem('Delivered', '${summary.deliveredCount}',
+                        Icons.check_circle_outline,
                         color: AppTheme.successGreen),
                     const Divider(height: 16),
-                    _buildRowItem('Delivery Failed (Retry)',
-                        '${summary.failedCount}', Icons.replay_rounded,
+                    _buildRowItem(
+                        'Failed (Retrying)',
+                        '${summary.failedCount}',
+                        Icons.replay_rounded,
                         color: const Color(0xFFD97706)),
                     const Divider(height: 16),
-                    _buildRowItem('Returned to Hub (Final)',
-                        '${summary.returnedToHubCount}', Icons.block_rounded,
+                    _buildRowItem(
+                        'Returned to Hub (Final)',
+                        '${summary.returnedToHubCount}',
+                        Icons.block_rounded,
                         color: AppTheme.errorRed),
                     const Divider(height: 16),
-                    _buildRowItem('Remaining Active Stops',
-                        '${summary.remainingCount}', Icons.pending_actions_rounded,
+                    _buildRowItem(
+                        'Remaining',
+                        '${summary.remainingCount}',
+                        Icons.pending_actions_rounded,
                         color: AppTheme.secondaryBlue),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            // Sync Queue Section
+            // Empty state for activity
+            if (!hasActivity)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.borderColor),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        size: 20, color: AppTheme.textSecondary),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'No delivery activity recorded yet today. All stops are pending.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Unsynced Actions Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -118,7 +156,7 @@ class DailySummaryScreen extends ConsumerWidget {
                     const Text(
                       'Unsynced Offline Queue',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
                       ),
@@ -150,6 +188,7 @@ class DailySummaryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
+            // Queue Content / Empty State
             if (summary.unsyncedActions.isEmpty)
               Card(
                 margin: EdgeInsets.zero,
@@ -160,7 +199,7 @@ class DailySummaryScreen extends ConsumerWidget {
                       children: [
                         const Icon(
                           Icons.cloud_done_rounded,
-                          size: 44,
+                          size: 40,
                           color: AppTheme.successGreen,
                         ),
                         const SizedBox(height: 8),
@@ -174,7 +213,8 @@ class DailySummaryScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'No pending offline operations in the queue.',
+                          'Local queue is empty. All operations are acknowledged by server.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppTheme.textSecondary,
@@ -256,7 +296,7 @@ class DailySummaryScreen extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                'Retry Attempt: ${action.retryCount} / 3',
+                                'Retry Count: ${action.retryCount} / 3',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -310,7 +350,7 @@ class DailySummaryScreen extends ConsumerWidget {
                   );
                 },
               ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
           ],
         ),
       ),

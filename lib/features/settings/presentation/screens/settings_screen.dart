@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/enums/sync_status.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/date_time_formatter.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -12,52 +14,145 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
     final clockService = ref.watch(clockServiceProvider);
     final currentClock =
         ref.watch(currentTimeProvider).value ?? DateTime.now();
     final isOffline = ref.watch(offlineModeProvider);
     final failureRate = ref.watch(mockFailureRateProvider);
     final syncEngine = ref.read(syncEngineProvider);
-    final mockServer = ref.watch(mockServerProvider);
     final queue = ref.watch(unsyncedActionsProvider);
-    final processedIds = mockServer.getProcessedRequestIds();
+
+    final queueCount = queue.length;
+    final pendingCount =
+        queue.where((a) => a.status == SyncStatus.pending).length;
+    final retryingCount =
+        queue.where((a) => a.status == SyncStatus.retrying).length;
+    final attentionCount =
+        queue.where((a) => a.status == SyncStatus.needsAttention).length;
+
+    final agentName = authState.session?.agentName ?? 'Asha';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings & Diagnostics'),
+        title: const Text('Settings & Application Info'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Section 1: Offline Mode
-          _buildSectionHeader('Network Connectivity Simulation'),
+          // Section A: Network Configuration
+          _buildSectionHeader('A. NETWORK CONFIGURATION'),
           Card(
             margin: EdgeInsets.zero,
-            child: SwitchListTile(
-              secondary: Icon(
-                isOffline ? Icons.wifi_off_rounded : Icons.wifi_rounded,
-                color: isOffline ? AppTheme.errorRed : AppTheme.successGreen,
-              ),
-              title: const Text(
-                'Offline Mode',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              subtitle: Text(
-                isOffline
-                    ? 'All server sync requests are currently blocked. Actions queue locally.'
-                    : 'Device is connected. Queued actions auto-sync in sequence.',
-                style: const TextStyle(fontSize: 12),
-              ),
-              value: isOffline,
-              onChanged: (val) {
-                syncEngine.setOfflineMode(val);
-              },
+            child: Column(
+              children: [
+                SwitchListTile(
+                  secondary: Icon(
+                    isOffline ? Icons.wifi_off_rounded : Icons.wifi_rounded,
+                    color:
+                        isOffline ? AppTheme.errorRed : AppTheme.successGreen,
+                  ),
+                  title: const Text(
+                    'Offline Mode',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  subtitle: Text(
+                    isOffline
+                        ? 'State: OFFLINE. All server requests fail; operations queue locally.'
+                        : 'State: ONLINE. Real-time background sync is active.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isOffline ? AppTheme.errorRed : AppTheme.textSecondary,
+                    ),
+                  ),
+                  value: isOffline,
+                  onChanged: (val) {
+                    syncEngine.setOfflineMode(val);
+                  },
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Mock Server Failure Rate:',
+                            style: TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${(failureRate * 100).toInt()}%',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.secondaryBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Slider(
+                        value: failureRate,
+                        min: 0.0,
+                        max: 1.0,
+                        divisions: 10,
+                        label: '${(failureRate * 100).toInt()}%',
+                        onChanged: (val) {
+                          syncEngine.setFailureRate(val);
+                        },
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                              ),
+                              onPressed: () => syncEngine.setFailureRate(0.0),
+                              child: const Text('0% Pass',
+                                  style: TextStyle(fontSize: 12)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                              ),
+                              onPressed: () => syncEngine.setFailureRate(0.30),
+                              child: const Text('30% Default',
+                                  style: TextStyle(fontSize: 12)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                              ),
+                              onPressed: () => syncEngine.setFailureRate(1.0),
+                              child: const Text('100% Fail',
+                                  style: TextStyle(fontSize: 12)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 20),
 
-          // Section 2: Demo Clock Controls
-          _buildSectionHeader('Demo Clock Simulation (Section 6)'),
+          // Section B: Demo Clock
+          _buildSectionHeader('B. DEMO CLOCK SIMULATION'),
           Card(
             margin: EdgeInsets.zero,
             child: Padding(
@@ -67,13 +162,13 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.access_time_filled,
+                      const Icon(Icons.access_time_filled_rounded,
                           color: AppTheme.secondaryBlue, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         clockService.isSimulated
-                            ? 'Simulated Clock Active'
-                            : 'Actual Device Clock Active',
+                            ? 'Simulated Clock (Active)'
+                            : 'Actual Device Clock (Real)',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -90,6 +185,7 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
+                  // Current simulated time display
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
@@ -98,85 +194,38 @@ class SettingsScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppTheme.borderColor),
                     ),
-                    child: Text(
-                      '${DateTimeFormatter.displayDateFormat.format(currentClock)}  •  ${DateTimeFormatter.displayTimeFormat.format(currentClock)}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryNavy,
-                      ),
+                    child: Column(
+                      children: [
+                        Text(
+                          DateTimeFormatter.displayTimeFormat
+                              .format(currentClock),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryNavy,
+                          ),
+                        ),
+                        Text(
+                          DateTimeFormatter.displayDateFormat
+                              .format(currentClock),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Quick Step Buttons
-                  const Text(
-                    'Quick Adjustments for Time Window Testing:',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () {
-                          // Jump to 08:45 (Before 09:00 window - Normal)
-                          final target = DateTime(
-                            currentClock.year,
-                            currentClock.month,
-                            currentClock.day,
-                            8,
-                            45,
-                          );
-                          clockService.setSimulatedTime(target);
-                        },
-                        child: const Text('Set 08:45 AM (Early)'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {
-                          // Jump to 09:50 (Within 10-15m before 10:00 - At Risk)
-                          final target = DateTime(
-                            currentClock.year,
-                            currentClock.month,
-                            currentClock.day,
-                            9,
-                            50,
-                          );
-                          clockService.setSimulatedTime(target);
-                        },
-                        child: const Text('Set 09:50 AM (At Risk)'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {
-                          // Jump to 10:15 (Past 10:00 - Late)
-                          final target = DateTime(
-                            currentClock.year,
-                            currentClock.month,
-                            currentClock.day,
-                            10,
-                            15,
-                          );
-                          clockService.setSimulatedTime(target);
-                        },
-                        child: const Text('Set 10:15 AM (Late)'),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 12),
 
-                  // Pick Date & Time Row
+                  // Date & Time pickers
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.calendar_today_rounded,
                               size: 16),
-                          label: const Text('Pick Date'),
+                          label: const Text('Select Date'),
                           onPressed: () async {
                             final pickedDate = await showDatePicker(
                               context: context,
@@ -201,7 +250,7 @@ class SettingsScreen extends ConsumerWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.schedule_rounded, size: 16),
-                          label: const Text('Pick Time'),
+                          label: const Text('Select Time'),
                           onPressed: () async {
                             final pickedTime = await showTimePicker(
                               context: context,
@@ -228,66 +277,43 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Section 3: Mock Server Failure Rate
-          _buildSectionHeader('Mock Server Network Reliability (S3)'),
+          // Section C: Synchronization Diagnostics
+          _buildSectionHeader('C. SYNCHRONIZATION DIAGNOSTICS'),
           Card(
             margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Simulated Failure Rate:',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${(failureRate * 100).toInt()}%',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.secondaryBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Slider(
-                    value: failureRate,
-                    min: 0.0,
-                    max: 1.0,
-                    divisions: 10,
-                    label: '${(failureRate * 100).toInt()}%',
-                    onChanged: (val) {
-                      syncEngine.setFailureRate(val);
-                    },
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => syncEngine.setFailureRate(0.0),
-                          child: const Text('0% (Pass)'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => syncEngine.setFailureRate(0.30),
-                          child: const Text('30% (Default)'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => syncEngine.setFailureRate(1.0),
-                          child: const Text('100% (Fail)'),
-                        ),
-                      ),
-                    ],
+                  _buildDiagRow('Total Queued Actions', '$queueCount',
+                      Icons.storage_rounded, AppTheme.primaryNavy),
+                  const Divider(height: 16),
+                  _buildDiagRow('Pending Actions', '$pendingCount',
+                      Icons.schedule_rounded, const Color(0xFF64748B)),
+                  const Divider(height: 16),
+                  _buildDiagRow('Retrying Actions', '$retryingCount',
+                      Icons.sync_rounded, const Color(0xFFD97706)),
+                  const Divider(height: 16),
+                  _buildDiagRow('Needs Attention Actions', '$attentionCount',
+                      Icons.error_outline_rounded, AppTheme.errorRed),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        syncEngine.processEligibleQueue();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Force sync initiated for queue.'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.sync_rounded, size: 18),
+                      label: const Text('Force Sync Queue Now'),
+                    ),
                   ),
                 ],
               ),
@@ -295,100 +321,70 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Section 4: Sync Diagnostics & Idempotency
-          _buildSectionHeader('Idempotency & Queue Storage (S5, S7)'),
+          // Section D: Application Information (Merged About)
+          _buildSectionHeader('D. APPLICATION INFORMATION'),
           Card(
             margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Local Queued Actions:'),
-                      Text(
-                        '${queue.length}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Processed Request IDs (Persistent):'),
-                      Text(
-                        '${processedIds.length}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            syncEngine.processEligibleQueue();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Sync triggered for queue!'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.sync_rounded, size: 16),
-                          label: const Text('Force Sync'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await mockServer.clearProcessedRequestIds();
-                            ref.invalidate(mockServerProvider);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Cleared mock server IDs.'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.delete_outline, size: 16),
-                          label: const Text('Clear Server IDs'),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildInfoRow('Application', AppConstants.appName,
+                      Icons.apps_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Developer', AppConstants.developerName,
+                      Icons.person_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Company', AppConstants.companyName,
+                      Icons.business_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Assessment', AppConstants.assessmentTitle,
+                      Icons.assignment_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Received Date',
+                      AppConstants.assessmentReceivedDate,
+                      Icons.calendar_today_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Received Time',
+                      AppConstants.assessmentReceivedTime,
+                      Icons.access_time_rounded),
+                  const Divider(height: 16),
+                  _buildInfoRow('Version', AppConstants.appVersion,
+                      Icons.info_outline_rounded),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 20),
 
-          // Section 5: Data Reset & Sign Out
-          _buildSectionHeader('Data Management & Session'),
+          // Section E: Account
+          _buildSectionHeader('E. ACCOUNT & DATA MANAGEMENT'),
           Card(
             margin: EdgeInsets.zero,
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.account_circle_outlined,
+                      color: AppTheme.secondaryBlue),
+                  title: const Text('Signed-In Agent',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  subtitle: Text(agentName,
+                      style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary)),
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.restore_page_outlined,
                       color: AppTheme.warningOrange),
-                  title: const Text('Reset Route Data to Initial JSON'),
-                  subtitle: const Text(
-                      'Restores the 14 realistic stops from assets/data/route_stops.json'),
+                  title: const Text('Reset Route to Initial JSON'),
+                  subtitle: const Text('Reloads original 14 stops',
+                      style: TextStyle(fontSize: 12)),
                   onTap: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: const Text('Reset Route Data?'),
                         content: const Text(
-                            'This will discard local stop mutations and reload the initial 14 stops.'),
+                            'This will discard local stop mutations and reload the initial 14 stops from route_stops.json.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
@@ -426,11 +422,36 @@ class SettingsScreen extends ConsumerWidget {
                     style: TextStyle(
                       color: AppTheme.errorRed,
                       fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
-                  subtitle: const Text('Clears current agent session'),
+                  subtitle: const Text('Clear session and return to sign in',
+                      style: TextStyle(fontSize: 12)),
                   onTap: () async {
-                    await ref.read(authNotifierProvider.notifier).signOut();
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Sign Out?'),
+                        content: const Text(
+                            'Are you sure you want to sign out? Your queued sync actions and route state will remain safely preserved in Hive.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.errorRed,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Sign Out'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await ref.read(authNotifierProvider.notifier).signOut();
+                    }
                   },
                 ),
               ],
@@ -448,12 +469,75 @@ class SettingsScreen extends ConsumerWidget {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: FontWeight.bold,
           color: AppTheme.textSecondary,
           letterSpacing: 0.3,
         ),
       ),
+    );
+  }
+
+  Widget _buildDiagRow(
+      String label, String value, IconData icon, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: BoxDecoration(
+            color: color.withAlpha(20),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppTheme.secondaryBlue),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 110,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
