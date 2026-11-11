@@ -13,10 +13,10 @@ flutter test
 ```
 
 ### Execution Results
-- **Total Tests Written**: 16
-- **Total Tests Passed**: 16
+- **Total Tests Written**: 21
+- **Total Tests Passed**: 21
 - **Total Tests Failed**: 0
-- **Execution Time**: ~4.8 seconds
+- **Execution Time**: ~4.2 seconds
 - **Pass Rate**: 100%
 
 ---
@@ -47,6 +47,11 @@ flutter test
 | **Route Sorter Retries** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies that retried/failed stops are placed at the end of the route behind active scheduled stops. |
 | **Time Alert Evaluator** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies evaluation of Normal (> 15m), At risk (<= 15m), and Late (> windowEnd) relative to the simulated clock. |
 | **Alert Exclusion** | `test/unit/time_alert_and_sorting_test.dart` | **PASSED** | Verifies that `Delivered` and `Returned to hub` stops are never classified as Late even past their window end. |
+| **Slider 30% to 0%** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies dragging slider from 30% to 0% updates Riverpod state, MockServer, and Hive. |
+| **Slider 30% to 100%** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies dragging slider from 30% to 100% updates Riverpod state, MockServer, and Hive. |
+| **Slider Presets** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies 0% Pass, 30% Default, and 100% Fail presets correctly configure slider and server. |
+| **Dynamic Request Evaluation** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies MockServer dynamically uses 100% rate to fail 100% of requests and 0% rate to pass 100% of requests. |
+| **Settings UI Widget** | `test/unit/failure_rate_slider_test.dart` | **PASSED** | Verifies tapping preset buttons in SettingsScreen immediately updates slider value and label text. |
 | **Smoke Test** | `test/widget_test.dart` | **PASSED** | Smoke test validating end-to-end sorting logic. |
 
 ---
@@ -70,6 +75,10 @@ flutter test
 4. **RadioListTile Deprecation in Latest Flutter**
    - *Issue*: Using deprecated `groupValue` on `RadioListTile` caused analyzer deprecation notices.
    - *Fix*: Created clean custom selection rows using `InkWell` and icons, improving touch target ergonomics and achieving 0 analyzer issues.
+
+5. **Mock Server Failure-Rate Slider Unresponsiveness**
+   - *Issue*: `mockFailureRateProvider` was defined as an un-notified read-only `Provider<double>`, and slider callbacks mutated `SyncEngine` without triggering `SettingsScreen` rebuilds.
+   - *Fix*: Re-architected `mockFailureRateProvider` as a `StateProvider<double>` with bidirectional binding to `MockServer` and 20 divisions, updating the live failure rate for both UI and subsequent server requests.
 
 ---
 
